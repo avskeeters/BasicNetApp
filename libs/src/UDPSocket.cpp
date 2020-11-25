@@ -1,7 +1,4 @@
-#include "NetworkingLib/UDPSocket.h"
 #include "NetworkingLib/Shared.h"
-#include "NetworkingLib/SocketAddress.h"
-#include "NetworkingLib/SocketUtilities.h"
 
 class UDPSocket::Impl
 {
@@ -16,7 +13,7 @@ int UDPSocket::Bind( SocketAddress const& toAddress )
 	if(errorCode != 0)
 	{
 		SocketUtilities::ShowLastError("UDPSocket::Bind");
-		return SocketUtilities::GetLastError();
+		return SocketUtilities::GetLastErrorCode();
 	}
 	return NO_ERROR;
 }
@@ -41,7 +38,7 @@ int UDPSocket::SendTo( void const* dataToSend, int const dataLength, SocketAddre
 	
 	// Return errors as negative number. Non-negative indicates that nothing went wrong with sendto explicitly
 	SocketUtilities::ShowLastError("UDPSocket::SendTo");
-	return -SocketUtilities::GetLastError();
+	return -SocketUtilities::GetLastErrorCode();
 }
 
 int UDPSocket::ReceiveFrom( void* dataBuffer, int maxDataLength, SocketAddress& fromAddress )
@@ -60,7 +57,7 @@ int UDPSocket::ReceiveFrom( void* dataBuffer, int maxDataLength, SocketAddress& 
 		return numBytesRead;
 	}
 
-	auto const errorCode = SocketUtilities::GetLastError();
+	auto const errorCode = SocketUtilities::GetLastErrorCode();
 
 	if(errorCode == WSAEWOULDBLOCK)
 	{
@@ -76,6 +73,18 @@ int UDPSocket::ReceiveFrom( void* dataBuffer, int maxDataLength, SocketAddress& 
 	
 	SocketUtilities::ShowLastError("UDPSocket::ReceiveFrom");
 	return -errorCode;
+}
+
+int UDPSocket::SetBlockingMode( BlockingMode blockingMode )
+{
+	auto shouldBlock = static_cast<unsigned long>(blockingMode);
+	auto errorCode = ioctlsocket(pImpl->socket, FIONBIO, &shouldBlock);
+	if(errorCode == SOCKET_ERROR)
+	{
+		SocketUtilities::ShowLastError("UDPSocket::SetBlockingMode");
+		return SocketUtilities::GetLastErrorCode();
+	}
+	return NO_ERROR;
 }
 
 UDPSocket::UDPSocket( void* hardwareSpecificSocket )

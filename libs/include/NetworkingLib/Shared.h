@@ -8,3 +8,7 @@
 // Standard integral types
 #include <cstdint>
 
+#include "NetworkingLib/SocketUtilities.h"
+#include "NetworkingLib/TCPSocket.h"
+#include "NetworkingLib/UDPSocket.h"
+#include "NetworkingLib/SocketAddress.h"

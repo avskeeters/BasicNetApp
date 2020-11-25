@@ -1,4 +1,3 @@
-#include "NetworkingLib/SocketUtilities.h"
 #include "NetworkingLib/Shared.h"
 #include <strsafe.h>
 
@@ -18,7 +17,7 @@ void SocketUtilities::Cleanup()
     WSACleanup();
 }
 
-int SocketUtilities::GetLastError()
+int SocketUtilities::GetLastErrorCode()
 {
     return WSAGetLastError();
 }
@@ -32,7 +31,7 @@ DWORD SocketUtilities::ShowLastError( LPCSTR lpszFunction, bool const inWindow )
 
     LPVOID lpMsgBuf;
     LPVOID lpDisplayBuf;
-    DWORD dw = GetLastError();
+    DWORD dw = GetLastErrorCode();
 
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -72,7 +71,7 @@ void SocketUtilities::ShowLastErrorAndExit( LPCSTR lpszFunction, bool const inWi
 
 UDPSocketPtr SocketUtilities::CreateUDPSocket( SocketAddressFamily socketAddrFamily )
 {
-    auto addressFamilyInt = static_cast<int>(socketAddrFamily);
+    auto const addressFamilyInt = static_cast<int>(socketAddrFamily);
     SOCKET newSocket = socket(addressFamilyInt, SOCK_DGRAM, IPPROTO_UDP);
 	if(newSocket != INVALID_SOCKET)
 	{
@@ -80,6 +79,18 @@ UDPSocketPtr SocketUtilities::CreateUDPSocket( SocketAddressFamily socketAddrFam
 	}
 
     ShowLastError("SocketUtilities::CreateUDPSocket");
+    return nullptr;
+}
+
+TCPSocketPtr SocketUtilities::CreateTCPSocket( SocketAddressFamily socketAddrFamily )
+{
+    auto const addressFamilyInt = static_cast<int>(socketAddrFamily);
+    SOCKET newSocket = socket(addressFamilyInt, SOCK_STREAM, IPPROTO_TCP);
+	if(newSocket != INVALID_SOCKET)
+	{
+        return TCPSocketPtr{ new TCPSocket(&newSocket) };
+	}
+    ShowLastError("SocketUtilities::CreateTCPSocket");
     return nullptr;
 }
 

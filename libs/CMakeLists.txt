@@ -7,12 +7,14 @@ set(NetworkingLibPublicHeaders
     include/NetworkingLib/Shared.h
     include/NetworkingLib/SocketAddress.h
     include/NetworkingLib/UDPSocket.h
+    include/NetworkingLib/TCPSocket.h
     include/NetworkingLib/SocketUtilities.h
 )
 
 set(NetworkingLibSources
     src/SocketAddress.cpp
     src/UDPSocket.cpp
+    src/TCPSocket.cpp
     src/SocketUtilities.cpp
 )
 
