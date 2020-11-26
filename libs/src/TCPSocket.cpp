@@ -16,6 +16,16 @@ TCPSocket::TCPSocket(void* hardwareSpecificSocket)
 	: pImpl{ std::make_unique<Impl>( *static_cast<SOCKET*>(hardwareSpecificSocket) ) }
 {}
 
+void* TCPSocket::GetRawSocketPtr()
+{
+	return &pImpl->socket;
+}
+
+void const* TCPSocket::GetRawSocketPtr() const
+{
+	return &pImpl->socket;
+}
+
 int TCPSocket::Connect( SocketAddress const& toAddress )
 {
 	auto const errorCode = connect(pImpl->socket,

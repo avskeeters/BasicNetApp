@@ -15,6 +15,8 @@ public:
 	int32_t Receive(void* dataBuffer, size_t maxDataLength);
 private:
 	TCPSocket(void* hardwareSpecificSocket);
+	void* GetRawSocketPtr();
+	void const* GetRawSocketPtr() const;
 	friend class SocketUtilities;
 	class Impl;
 	std::unique_ptr<Impl> pImpl;

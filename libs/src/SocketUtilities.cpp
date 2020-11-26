@@ -94,4 +94,60 @@ TCPSocketPtr SocketUtilities::CreateTCPSocket( SocketAddressFamily socketAddrFam
     return nullptr;
 }
 
+int SocketUtilities::Select( std::vector<TCPSocketPtr> const* checkForReadable,
+	std::vector<TCPSocketPtr>* outputReadable, std::vector<TCPSocketPtr> const* checkForWritable,
+	std::vector<TCPSocketPtr>* outputWritable, std::vector<TCPSocketPtr> const* checkForExceptions,
+	std::vector<TCPSocketPtr>* outputExceptions )
+{
+    fd_set readSet;
+    fd_set writeSet;
+    fd_set exceptSet;
+
+    auto* readSetPtr = VectorToFDSet(readSet, checkForReadable);
+    auto* writeSetPtr = VectorToFDSet(writeSet, checkForWritable);
+    auto* exceptSetPtr = VectorToFDSet(exceptSet, checkForExceptions);
+
+    auto const total = select(1, readSetPtr, writeSetPtr, exceptSetPtr, nullptr);
+	if(total > 0)
+	{
+        FDSetToVector(outputReadable, checkForReadable, readSet);
+        FDSetToVector(outputWritable, checkForWritable, writeSet);
+        FDSetToVector(outputExceptions, checkForExceptions, exceptSet);
+	}
+
+    return total;
+}
+
+fd_set* SocketUtilities::VectorToFDSet( fd_set& setToFill, std::vector<TCPSocketPtr> const* sockets )
+{
+	if(sockets)
+	{
+        FD_ZERO(&setToFill);
+		for(auto const& _socket : *sockets)
+		{
+            FD_SET(*static_cast<SOCKET const*>(_socket->GetRawSocketPtr()), &setToFill);
+		}
+        return &setToFill;
+	}
+    return nullptr;
+}
+
+void SocketUtilities::FDSetToVector( std::vector<TCPSocketPtr>* vectorToFill,
+	std::vector<TCPSocketPtr> const* vectorToPullFrom, fd_set const& setToFill )
+{
+	if(vectorToFill && vectorToPullFrom)
+	{
+        vectorToFill->clear();
+		for(auto const& _socket : *vectorToPullFrom)
+		{
+			// See if socket in set
+			if(FD_ISSET(*static_cast<SOCKET const*>(_socket->GetRawSocketPtr()), &setToFill))
+			{
+                vectorToFill->push_back(_socket);
+			}
+		}
+	}
+}
+
+
 
